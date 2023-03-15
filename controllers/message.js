@@ -1,23 +1,24 @@
 const Message = require('../models/message');
 const { ValidationError } = require('../errors/ValidationError');
 
-module.exports.getAllMessage = (req, res, next) => {
-  Message.find({})
+const getAllMessage = (req, res, next) => {
+  Message.find()
     .then((message) => {
       res.send(message);
     })
     .catch((err) => next(err));
 };
 
-module.exports.createMessage = (req, res, next) => {
+const createMessage = (req, res, next) => {
   const {
-    text, userName,
+    id, owner, userName, text,
   } = req.body;
 
   Message.create({
+    id,
+    owner,
     text,
     userName,
-    owner: req.user._id,
   })
     .then((message) => {
       res.status(201).send(message);
@@ -28,4 +29,9 @@ module.exports.createMessage = (req, res, next) => {
       }
       next(err);
     });
+};
+
+module.exports = {
+  getAllMessage,
+  createMessage,
 };

@@ -6,7 +6,8 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const { errors } = require('celebrate');
-const WebSockets = require('./socket/webSocket');
+const { registerConnect } = require('./socket/registerConnect');
+const { registerMessage } = require('./socket/registerMessage');
 const cors = require('./middlewares/cors');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const route = require('./routes/index');
@@ -44,11 +45,23 @@ route(app); // All routes
 app.use(errorLogger); // errorLogger is connected after route handlers and before error handlers
 app.use(errors()); // celebrate error handler
 
-const server = http.createServer(app);
+const httpServer = http.createServer(app);
 
-global.io = socketio(server.listen(NODE_ENV === 'production' ? PORT_PROD : PORT_DEV, () => {}));
-global.io.on('connection', WebSockets.connection);
+const io = socketio(httpServer, {
+  cors: {
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST'],
+  },
+});
+
+const onConnection = (socket) => {
+  registerConnect(socket);
+  registerMessage(socket);
+};
+
+io.on('connection', onConnection);
+httpServer.listen(NODE_ENV === 'production' ? PORT_PROD : PORT_DEV, () => {
+  console.log(`Server is running on ${NODE_ENV === 'production' ? PORT_PROD : PORT_DEV}`);
+});
 
 errorHendler(app); // handle all errors here
-
-// app.listen(NODE_ENV === 'production' ? PORT_PROD : PORT_DEV, () => {});

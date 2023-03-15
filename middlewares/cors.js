@@ -1,5 +1,6 @@
 // Массив доменов, с которых разрешены кросс-доменные запросы
-const allowedCors = ['http://localhost:3000'];
+// const allowedCors = ['http://localhost:3000'];
+const allowedCors = ['https://chat-frontend-u3jf.onrender.com'];
 
 module.exports = (req, res, next) => {
   const { origin } = req.headers; // Сохраняем источник запроса в переменную origin

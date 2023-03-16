@@ -33,6 +33,6 @@ module.exports = (app) => {
   app.use('/', isAuthorized, messages);
 
   app.use((req, res, next) => {
-    next(new PageNotFoundError('404 - Страницы не существует'));
+    next(new PageNotFoundError('404 - Page does not exist'));
   });
 };

@@ -1,29 +1,27 @@
-// Массив доменов, с которых разрешены кросс-доменные запросы
-const allowedCors = ['http://localhost:3000'];
+const allowedCors = ['https://chat-frontend-u3jf.onrender.com', 'http://chat-frontend-u3jf.onrender.com', 'http://localhost:3000'];
 
 module.exports = (req, res, next) => {
-  const { origin } = req.headers; // Сохраняем источник запроса в переменную origin
-  // проверяем, что источник запроса есть среди разрешённых
-  const { method } = req; // Сохраняем тип запроса (HTTP-метод) в соответствующую переменную
+  const { origin } = req.headers; /* Save the origin of the request to the origin variable */
+  const { method } = req; /* Save the request type (HTTP method) to the appropriate variable */
 
-  // Значение для заголовка Access-Control-Allow-Methods по умолчанию (разрешены все типы запросов)
+  /* Default value for the Access-Control-Allow-Methods header (all request types are allowed) */
   const DEFAULT_ALLOWED_METHODS = 'GET,HEAD,PUT,PATCH,POST,DELETE';
 
-  // сохраняем список заголовков исходного запроса
+  /* Save the list of original request headers */
   const requestHeaders = req.headers['access-control-request-headers'];
 
   if (allowedCors.includes(origin)) {
-    // устанавливаем заголовок, который разрешает браузеру запросы с этого источника
+    /* set a header that allows browser requests from this origin */
     res.header('Access-Control-Allow-Origin', origin);
   }
 
-  // Если это предварительный запрос, добавляем нужные заголовки
+  /* If this is a preliminary request, add the necessary headers */
   if (method === 'OPTIONS') {
-    // разрешаем кросс-доменные запросы любых типов (по умолчанию)
+    /* Allow cross-domain requests of any type (default) */
     res.header('Access-Control-Allow-Methods', DEFAULT_ALLOWED_METHODS);
-    // разрешаем кросс-доменные запросы с этими заголовками
+    /* Allow cross-domain requests with these headers */
     res.header('Access-Control-Allow-Headers', requestHeaders);
-    // завершаем обработку запроса и возвращаем результат клиенту
+    /* Finish processing the request and return the result to the client */
     return res.end();
   }
 

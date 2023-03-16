@@ -1,20 +1,21 @@
 require('dotenv').config();
-const http = require('http');
 const express = require('express');
-const socketio = require('socket.io');
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
 const helmet = require('helmet');
+const mongoose = require('mongoose');
+const { createServer } = require('http');
+const { Server } = require('socket.io');
+const route = require('./routes/index');
 const { errors } = require('celebrate');
+const bodyParser = require('body-parser');
+const cors = require('./middlewares/cors');
+const errorHendler = require('./middlewares/errorHandler');
 const { registerConnect } = require('./socket/registerConnect');
 const { registerMessage } = require('./socket/registerMessage');
-const cors = require('./middlewares/cors');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-const route = require('./routes/index');
-const errorHendler = require('./middlewares/errorHandler');
-const { MONGO_DEV, PORT_DEV } = require('./const/const');
 
-const { PORT_PROD, MONGO_PROD, NODE_ENV } = process.env;
+const { MONGO_DEV } = require('./const/const');
+const { MONGO_PROD, NODE_ENV } = process.env;
+const PORT = process.env.PORT || 8080;
 
 const app = express();
 
@@ -33,23 +34,23 @@ mongoose.connection.on('disconnected', () => {
   console.log('Mongo connection is disconnected');
 });
 
-app.use(helmet()); // using Helmet
-app.disable('x-powered-by'); // disable header X-Powered-By
-app.use(bodyParser.json()); // to collect JSON format
-app.use(bodyParser.urlencoded({ extended: true })); // for receiving web pages inside a POST request
-app.use(requestLogger); // connect request logger
-app.use(cors); // include cors headers
+app.use(helmet()); /* Using Helmet to secure the app */
+app.disable('x-powered-by'); /* Disable header X-Powered-By */
+app.use(bodyParser.json()); /* to collect JSON format data */
+app.use(bodyParser.urlencoded({ extended: true })); /* For receiving web pages inside a POST request */
+app.use(requestLogger); /* Connect request logger */
+app.use(cors); /* Include cors headers */
 
-route(app); // All routes
+route(app); /* All routes are defined here */
 
-app.use(errorLogger); // errorLogger is connected after route handlers and before error handlers
-app.use(errors()); // celebrate error handler
+app.use(errorLogger); /* ErrorLogger is connected after route handlers and before error handlers */
+app.use(errors()); /* Celebrate error handler */
 
-const httpServer = http.createServer(app);
+const httpServer = createServer(app);
 
-const io = socketio(httpServer, {
+const io = new Server(httpServer, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: '*',
     methods: ['GET', 'POST'],
   },
 });
@@ -60,8 +61,9 @@ const onConnection = (socket) => {
 };
 
 io.on('connection', onConnection);
-httpServer.listen(NODE_ENV === 'production' ? PORT_PROD : PORT_DEV, () => {
-  console.log(`Server is running on ${NODE_ENV === 'production' ? PORT_PROD : PORT_DEV}`);
+
+httpServer.listen(PORT, () => {
+  console.log(`Server has started on port ${PORT}`);
 });
 
-errorHendler(app); // handle all errors here
+errorHendler(app); /* Handle all errors here */

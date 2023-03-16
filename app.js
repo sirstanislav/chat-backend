@@ -4,9 +4,9 @@ const helmet = require('helmet');
 const mongoose = require('mongoose');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
-const route = require('./routes/index');
 const { errors } = require('celebrate');
 const bodyParser = require('body-parser');
+const route = require('./routes/index');
 const cors = require('./middlewares/cors');
 const errorHendler = require('./middlewares/errorHandler');
 const { registerConnect } = require('./socket/registerConnect');
@@ -14,6 +14,7 @@ const { registerMessage } = require('./socket/registerMessage');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const { MONGO_DEV } = require('./const/const');
+
 const { MONGO_PROD, NODE_ENV } = process.env;
 const PORT = process.env.PORT || 8080;
 
@@ -34,10 +35,15 @@ mongoose.connection.on('disconnected', () => {
   console.log('Mongo connection is disconnected');
 });
 
-app.use(helmet()); /* Using Helmet to secure the app */
-app.disable('x-powered-by'); /* Disable header X-Powered-By */
-app.use(bodyParser.json()); /* to collect JSON format data */
-app.use(bodyParser.urlencoded({ extended: true })); /* For receiving web pages inside a POST request */
+app.use(helmet());
+/* Using Helmet to secure the app */
+app.disable('x-powered-by');
+/* Disable header X-Powered-By */
+app.use(bodyParser.json());
+/* to collect JSON format data */
+app.use(bodyParser.urlencoded({ extended: true }));
+/* For receiving web pages inside a POST request */
+
 app.use(requestLogger); /* Connect request logger */
 app.use(cors); /* Include cors headers */
 
